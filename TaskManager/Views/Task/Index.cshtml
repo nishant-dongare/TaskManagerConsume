@@ -1,0 +1,44 @@
+﻿@model TaskManager.Models.StudentDto
+
+@{
+    ViewData["Title"] = "Student Details";
+}
+
+<h2>Student Details</h2>
+
+<div>
+    <h3>@Model.StudentName</h3>
+    <dl class="row">
+        <dt class="col-sm-2">Student ID</dt>
+        <dd class="col-sm-10">@Model.StudentId</dd>
+
+        <dt class="col-sm-2">Batch</dt>
+        <dd class="col-sm-10">@Model.Batch?.BatchName</dd>
+    </dl>
+</div>
+
+@if (Model.TaskAssignmentsDto != null && Model.TaskAssignmentsDto.Any())
+{
+    <h3>Task Assignments</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Task Assignment ID</th>
+                <th>Task ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var taskAssignment in Model.TaskAssignmentsDto)
+            {
+                <tr>
+                    <td>@taskAssignment.TaskAssignmentId</td>
+                    <td>@taskAssignment.TaskId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No task assignments available for this student.</p>
+}

@@ -1,0 +1,133 @@
+﻿@model TaskManager.Models.ViewModels.AssignTaskViewModel
+
+@{
+    ViewData["Title"] = "Assign Task";
+    List<Batch> batches = ViewBag.batches;
+}
+
+<style>
+    .dropdown-menu {
+        width: 100%;
+    }
+
+    .dropdown-toggle::after {
+        margin-left: 0.5rem;
+    }
+
+    .list-unstyled {
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .mainCard {
+        width: 60%;
+        border: 1px solid #aaa !important;
+    }
+
+    .bgclr {
+        background-color: #f7f7fa !important;
+        min-height: 580px !important;
+    }
+</style>
+
+<div class="page-wrapper bgclr">
+    <div class="content container-fluid">
+        <div class="w-100 bgclr d-flex justify-content-center align-items-center">
+            <div class="card mainCard">
+                <div class="card-body">
+                    <h3 class="text-center fw-bold fst-italic mb-3">Assign Task</h3>
+                    <form asp-action="AssignTask" method="post" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col form-floating">
+                                <select id="batchDropdown" asp-for="SelectedBatch" class="form-control">
+                                    <option value="">Select Batch</option>
+                                    @foreach (var batch in batches)
+                                    {
+                                        <option value="@batch.BatchId">@batch.BatchName</option>
+                                    }
+                                </select>
+                                <label for="SelectedBatch" class="mx-3">Select Batch :</label>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="dropdown mt-3">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownStudentsButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Select Students
+                                    </button>
+                                    <div class="dropdown-menu p-3" aria-labelledby="dropdownStudentsButton" style="max-height: 300px; overflow-y: auto;">
+                                        <input type="checkbox" id="selectAll" /> Select All
+                                        <div class="list-unstyled" id="studentsList">
+                                            @* Initially empty; will be filled by AJAX *@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col form-floating">
+                                <textarea asp-for="TaskDescription" class="form-control"></textarea>
+                                <label for="TaskDescription" class="mx-3">Enter Task :</label>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col form-floating">
+                                <input type="file" asp-for="Attachment" class="form-control" />
+                                <label for="Attachment" class="mx-3">Upload Attachments :</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary form-control">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Fetch and populate students based on selected batch
+        $('#batchDropdown').change(function () {
+            var selectedBatch = $(this).val();
+            if (selectedBatch) {
+                $.ajax({
+                    url: '@Url.Action("GetStudentsByBatch", "Task")',
+                    type: 'GET',
+                    data: { batch: selectedBatch },
+                    success: function (data) {
+                        console.log(data); // Log the received data for debugging
+
+                        var $studentsList = $('#studentsList');
+                        $studentsList.empty(); // Clear existing students
+                        $studentsList.append('<div><input type="checkbox" id="selectAll" /> Select All</div>');
+
+                        $.each(data, function (index, student) {
+                            // Ensure student properties are correctly accessed
+                            $studentsList.append('<div><input type="checkbox" name="SelectedStudents" value="' + student.studentId + '" /> ' + student.studentName + '</div>');
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Failed to fetch students:', error);
+                        $('#studentsList').empty(); // Clear student list on error
+                    }
+                });
+            } else {
+                $('#studentsList').empty(); // Clear student list if no batch selected
+            }
+        });
+
+        // Select/Deselect all students
+        $(document).on('click', '#selectAll', function () {
+            var isChecked = $(this).is(':checked');
+            $('input[name="SelectedStudents"]').prop('checked', isChecked);
+        });
+    });
+</script>
